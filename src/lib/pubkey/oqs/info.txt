@@ -12,6 +12,6 @@ load_on vendor
 all -> oqs
 </libs>
 
-<header:internal>
+<header:public>
 oqs-integration.h
-</header:internal>
+</header:public>

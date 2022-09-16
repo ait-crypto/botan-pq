@@ -73,7 +73,7 @@
 #endif
 
 #if defined(BOTAN_HAS_OQS)
-#include "oqs/oqs-integration.h"
+#include <botan/oqs-integration.h>
 #endif
 
 namespace Botan {
