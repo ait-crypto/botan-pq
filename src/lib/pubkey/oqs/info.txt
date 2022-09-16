@@ -1,5 +1,5 @@
 <defines>
-OQS -> 20160412
+OQS -> 20220916
 </defines>
 
 <module_info>
@@ -14,5 +14,4 @@ all -> oqs
 
 <header:internal>
 oqs-integration.h
-pq_mapping.h
 </header:internal>

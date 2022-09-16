@@ -1,6 +1,7 @@
 /*
  * PQ-Schemes implemenation
  * (C) 2022 Simon Gärtner
+ * (C) 2022 Sebastian Ramacher
  *
  * Botan is released under the Simplified BSD License (see license.txt)
  */
@@ -8,13 +9,65 @@
 #include <botan/internal/pk_ops_impl.h>
 #include <botan/pk_keys.h>
 
-#include "pq_mapping.h"
 #include <oqs/sig.h>
 
-#ifndef PQ_ALGOS_H
-#define PQ_ALGOS_H
+#ifndef OQS_INTEGRATION_H
+#define OQS_INTEGRATION_H
 
 namespace Botan {
+  enum class PQSignatureScheme : uint32_t {
+    dilithium2,
+    dilithium3,
+    dilithium5,
+    dilithium2_aes,
+    dilithium3_aes,
+    dilithium5_aes,
+    picnic_l1_fs,
+    picnic_l1_full,
+    picnic_l3_fs,
+    picnic_l3_full,
+    picnic_l5_fs,
+    picnic_l5_full,
+    picnic3_l1,
+    picnic3_l3,
+    picnic3_l5,
+    sphincs_haraka_128f_robust,
+    sphincs_haraka_128f_simple,
+    sphincs_haraka_128s_robust,
+    sphincs_haraka_128s_simple,
+    sphincs_haraka_192f_robust,
+    sphincs_haraka_192f_simple,
+    sphincs_haraka_192s_robust,
+    sphincs_haraka_192s_simple,
+    sphincs_haraka_256f_robust,
+    sphincs_haraka_256f_simple,
+    sphincs_haraka_256s_robust,
+    sphincs_haraka_256s_simple,
+    sphincs_sha256_128f_robust,
+    sphincs_sha256_128f_simple,
+    sphincs_sha256_128s_robust,
+    sphincs_sha256_128s_simple,
+    sphincs_sha256_192f_robust,
+    sphincs_sha256_192f_simple,
+    sphincs_sha256_192s_robust,
+    sphincs_sha256_192s_simple,
+    sphincs_sha256_256f_robust,
+    sphincs_sha256_256f_simple,
+    sphincs_sha256_256s_robust,
+    sphincs_sha256_256s_simple,
+    sphincs_shake256_128f_robust,
+    sphincs_shake256_128f_simple,
+    sphincs_shake256_128s_robust,
+    sphincs_shake256_128s_simple,
+    sphincs_shake256_192f_robust,
+    sphincs_shake256_192f_simple,
+    sphincs_shake256_192s_robust,
+    sphincs_shake256_192s_simple,
+    sphincs_shake256_256f_robust,
+    sphincs_shake256_256f_simple,
+    sphincs_shake256_256s_robust,
+    sphincs_shake256_256s_simple
+  };
 
   class PQ_PrivateKey;
   class PQ_Verify_Operation;
@@ -23,7 +76,7 @@ namespace Botan {
   /**
    * This class represents PQ Public Keys
    */
-  class BOTAN_PUBLIC_API(2, 2) PQ_PublicKey : public virtual Public_Key {
+  class BOTAN_PUBLIC_API(3, 0) PQ_PublicKey : public virtual Public_Key {
   public:
     friend class PQ_Verify_Operation;
 
@@ -112,7 +165,7 @@ namespace Botan {
   /**
    * This class represents PQ Private Keys
    */
-  class BOTAN_PUBLIC_API(2, 2) PQ_PrivateKey : public virtual Private_Key,
+  class BOTAN_PUBLIC_API(3, 0) PQ_PrivateKey : public virtual Private_Key,
                                                public virtual PQ_PublicKey {
   public:
     friend class PQ_Sign_Operation;
@@ -174,7 +227,6 @@ namespace Botan {
   protected:
     secure_vector<uint8_t> m_private;
   };
-
 } // namespace Botan
 
 #endif // PQ_Algos_H
