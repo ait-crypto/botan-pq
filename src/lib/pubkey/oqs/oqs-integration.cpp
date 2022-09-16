@@ -12,10 +12,19 @@
 #include <botan/der_enc.h>
 #include <botan/oids.h>
 
+#include <oqs/sig.h>
+
 #include <array>
 #include <string_view>
 
 namespace Botan {
+  struct PQImpl {
+    PQImpl(OQS_SIG sig, PQSignatureScheme scheme) : m_sig(sig), m_scheme(scheme) {}
+
+    OQS_SIG m_sig;
+    PQSignatureScheme m_scheme;
+  };
+
   namespace {
     struct Entry {
       PQSignatureScheme scheme;
@@ -131,13 +140,13 @@ namespace Botan {
       throw Lookup_Error("Unable to lookup PQ signature scheme for " + name);
     }
 
-    OQS_SIG get_sig(PQSignatureScheme scheme) {
+    std::shared_ptr<PQImpl> get_sig(PQSignatureScheme scheme) {
       const auto oqs_name = to_string(scheme);
       OQS_SIG* ptr        = OQS_SIG_new(oqs_name.data());
       if (!ptr) {
         throw Lookup_Error("Unable to lookup PQ signature scheme " + std::string{oqs_name});
       }
-      OQS_SIG ret = *ptr;
+      auto ret = std::make_shared<PQImpl>(*ptr, scheme);
       OQS_SIG_free(ptr);
       return ret;
     }
@@ -158,7 +167,8 @@ namespace Botan {
      * @param params contains pq-scheme specific parameters
      * @param pq_scheme_choice enum, which defines the pq-scheme
      */
-    PQ_Verify_Operation(const PQ_PublicKey& key) : m_key(key) {}
+    PQ_Verify_Operation(const std::shared_ptr<PQImpl>& impl, const std::vector<uint8_t>& key)
+      : m_impl(impl), m_public(key) {}
 
     /**
      * Function is_valid_signature verifies a signature using a pq public key and
@@ -169,8 +179,8 @@ namespace Botan {
      * @return return if the signature is valid or not (true or false)
      */
     bool is_valid_signature(const uint8_t sig[], size_t sig_len) override {
-      return OQS_SIG_verify(&m_key.m_sig, m_msg.data(), m_msg.size(), sig, sig_len,
-                            m_key.m_public.data()) == OQS_SUCCESS;
+      return OQS_SIG_verify(&m_impl->m_sig, m_msg.data(), m_msg.size(), sig, sig_len,
+                            m_public.data()) == OQS_SUCCESS;
     }
 
     /**
@@ -185,8 +195,9 @@ namespace Botan {
     }
 
   private:
+    std::shared_ptr<PQImpl> m_impl;
+    const std::vector<uint8_t>& m_public;
     std::vector<uint8_t> m_msg;
-    const PQ_PublicKey& m_key;
   };
 
   // Implementation of the signing operation
@@ -201,7 +212,8 @@ namespace Botan {
      * @param msg contains message which should get signed
      * @param pq_scheme_choice enum, which defines the pq-scheme
      */
-    explicit PQ_Sign_Operation(const PQ_PrivateKey& key) : m_key(key) {}
+    PQ_Sign_Operation(const std::shared_ptr<PQImpl>& impl, const secure_vector<uint8_t>& key)
+      : m_impl(impl), m_private(key) {}
 
     /**
      * Function sign signs a message using a pq private key and saves the signature.
@@ -214,8 +226,8 @@ namespace Botan {
       std::size_t length = signature_length();
       secure_vector<uint8_t> signature(length);
 
-      const auto status = OQS_SIG_sign(&m_key.m_sig, signature.data(), &length, m_msg.data(),
-                                       m_msg.size(), m_key.m_private.data());
+      const auto status = OQS_SIG_sign(&m_impl->m_sig, signature.data(), &length, m_msg.data(),
+                                       m_msg.size(), m_private.data());
       if (status != OQS_SUCCESS) {
         throw Internal_Error("OQS_SIG_sign failed for an unknown reason!");
       }
@@ -239,17 +251,18 @@ namespace Botan {
      * @return size_t return signature length
      */
     size_t signature_length() const override {
-      return m_key.m_sig.length_signature;
+      return m_impl->m_sig.length_signature;
     }
 
   private:
+    std::shared_ptr<PQImpl> m_impl;
+    const secure_vector<uint8_t>& m_private;
     std::vector<uint8_t> m_msg;
-    const PQ_PrivateKey& m_key;
   };
 
   // Implementation of the public key
 
-  PQ_PublicKey::PQ_PublicKey(PQSignatureScheme scheme) : m_sig(get_sig(scheme)), m_scheme(scheme) {}
+  PQ_PublicKey::PQ_PublicKey(PQSignatureScheme scheme) : m_impl(get_sig(scheme)) {}
 
   PQ_PublicKey::PQ_PublicKey(const AlgorithmIdentifier& alg_id,
                              const std::vector<uint8_t>& key_bits)
@@ -262,7 +275,7 @@ namespace Botan {
   PQ_PublicKey::~PQ_PublicKey() {}
 
   std::string PQ_PublicKey::algo_name() const {
-    return std::string{to_human_readable_string(m_scheme)};
+    return std::string{to_human_readable_string(m_impl->m_scheme)};
   }
 
   std::vector<uint8_t> PQ_PublicKey::public_key_bits() const {
@@ -277,7 +290,7 @@ namespace Botan {
 
   std::unique_ptr<PK_Ops::Verification>
   PQ_PublicKey::create_verification_op(const std::string&, const std::string&) const {
-    return std::make_unique<Botan::PQ_Verify_Operation>(*this);
+    return std::make_unique<Botan::PQ_Verify_Operation>(m_impl, m_public);
   }
 
   bool PQ_PublicKey::check_key(RandomNumberGenerator&, bool) const {
@@ -285,7 +298,7 @@ namespace Botan {
   }
 
   size_t PQ_PublicKey::estimated_strength() const {
-    switch (m_sig.claimed_nist_level) {
+    switch (m_impl->m_sig.claimed_nist_level) {
     case 3:
     case 4:
       return 192;
@@ -297,16 +310,16 @@ namespace Botan {
   }
 
   size_t PQ_PublicKey::key_length() const {
-    return m_sig.length_public_key;
+    return m_impl->m_sig.length_public_key;
   }
 
   // Implementation of the private key
 
   PQ_PrivateKey::PQ_PrivateKey(PQSignatureScheme scheme) : PQ_PublicKey(scheme) {
-    m_private.resize(m_sig.length_secret_key);
-    m_public.resize(m_sig.length_public_key);
+    m_private.resize(m_impl->m_sig.length_secret_key);
+    m_public.resize(m_impl->m_sig.length_public_key);
 
-    const auto status = OQS_SIG_keypair(&m_sig, m_public.data(), m_private.data());
+    const auto status = OQS_SIG_keypair(&m_impl->m_sig, m_public.data(), m_private.data());
     if (status != OQS_SUCCESS) {
       throw Internal_Error("OQS_SIG_keypair failed for an unknown reason!");
     }
@@ -314,10 +327,10 @@ namespace Botan {
 
   PQ_PrivateKey::PQ_PrivateKey(const std::string& algorith_name)
     : PQ_PublicKey(from_string(algorith_name)) {
-    m_private.resize(m_sig.length_secret_key);
-    m_public.resize(m_sig.length_public_key);
+    m_private.resize(m_impl->m_sig.length_secret_key);
+    m_public.resize(m_impl->m_sig.length_public_key);
 
-    const auto status = OQS_SIG_keypair(&m_sig, m_public.data(), m_private.data());
+    const auto status = OQS_SIG_keypair(&m_impl->m_sig, m_public.data(), m_private.data());
     if (status != OQS_SUCCESS) {
       throw Internal_Error("OQS_SIG_keypair failed for an unknown reason!");
     }
@@ -347,10 +360,10 @@ namespace Botan {
   std::unique_ptr<PK_Ops::Signature> PQ_PrivateKey::create_signature_op(RandomNumberGenerator&,
                                                                         const std::string&,
                                                                         const std::string&) const {
-    return std::make_unique<Botan::PQ_Sign_Operation>(*this);
+    return std::make_unique<Botan::PQ_Sign_Operation>(m_impl, m_private);
   }
 
   size_t PQ_PrivateKey::key_length() const {
-    return m_sig.length_secret_key + m_sig.length_public_key;
+    return m_impl->m_sig.length_secret_key + m_impl->m_sig.length_public_key;
   }
 } // namespace Botan

@@ -9,7 +9,7 @@
 #include <botan/internal/pk_ops_impl.h>
 #include <botan/pk_keys.h>
 
-#include <oqs/sig.h>
+#include <memory>
 
 #ifndef OQS_INTEGRATION_H
 #define OQS_INTEGRATION_H
@@ -70,17 +70,14 @@ namespace Botan {
     sphincs_shake256_256s_simple
   };
 
+  struct PQImpl;
   class PQ_PrivateKey;
-  class PQ_Verify_Operation;
-  class PQ_Sign_Operation;
 
   /**
    * This class represents PQ Public Keys
    */
   class BOTAN_PUBLIC_API(3, 0) PQ_PublicKey : public virtual Public_Key {
   public:
-    friend class PQ_Verify_Operation;
-
     /**
      * Destructor
      */
@@ -150,9 +147,8 @@ namespace Botan {
     create_verification_op(const std::string& params, const std::string& provider) const override;
 
   protected:
-    OQS_SIG m_sig;
+    std::shared_ptr<PQImpl> m_impl;
     std::vector<uint8_t> m_public;
-    PQSignatureScheme m_scheme;
 
     /**
      * Initialize empty public key based on scheme selection
@@ -164,11 +160,9 @@ namespace Botan {
   /**
    * This class represents PQ Private Keys
    */
-  class BOTAN_PUBLIC_API(3, 0) PQ_PrivateKey : public virtual Private_Key,
-                                               public virtual PQ_PublicKey {
+  class BOTAN_PUBLIC_API(3, 0) PQ_PrivateKey final : public virtual Private_Key,
+                                                     public virtual PQ_PublicKey {
   public:
-    friend class PQ_Sign_Operation;
-
     /**
      * Destructor
      */
