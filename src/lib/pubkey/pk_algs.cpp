@@ -72,6 +72,10 @@
   #include <botan/sm2.h>
 #endif
 
+#if defined(BOTAN_HAS_OQS)
+#include "oqs/oqs-integration.h"
+#endif
+
 namespace Botan {
 
 std::unique_ptr<Public_Key>
@@ -152,14 +156,47 @@ load_public_key(const AlgorithmIdentifier& alg_id,
       return std::make_unique<XMSS_PublicKey>(key_bits);
 #endif
 
-   throw Decoding_Error("Unknown or unavailable public key algorithm " + alg_name);
-   }
+#if defined(BOTAN_HAS_OQS)
+    if (alg_name == "Dilithium 2" || alg_name == "Dilithium 3" || alg_name == "Dilithium 5" ||
+        alg_name == "Dilithium 2 AES" || alg_name == "Dilithium 3 AES" ||
+        alg_name == "Dilithium 5 AES" || alg_name == "Picnic L1 FS" ||
+        alg_name == "Picnic L1 Full" || alg_name == "Picnic L3 FS" ||
+        alg_name == "Picnic L3 Full" || alg_name == "Picnic L5 FS" ||
+        alg_name == "Picnic L5 Full" || alg_name == "Picnic3 L1" || alg_name == "Picnic3 L3" ||
+        alg_name == "Picnic3 L5" || alg_name == "SPHINCS+-Haraka-128f-robust" ||
+        alg_name == "SPHINCS+-Haraka-128f-simple" || alg_name == "SPHINCS+-Haraka-128s-robust" ||
+        alg_name == "SPHINCS+-Haraka-128s-simple" || alg_name == "SPHINCS+-Haraka-192f-robust" ||
+        alg_name == "SPHINCS+-Haraka-192f-simple" || alg_name == "SPHINCS+-Haraka-192s-robust" ||
+        alg_name == "SPHINCS+-Haraka-192s-simple" || alg_name == "SPHINCS+-Haraka-256f-robust" ||
+        alg_name == "SPHINCS+-Haraka-256f-simple" || alg_name == "SPHINCS+-Haraka-256s-robust" ||
+        alg_name == "SPHINCS+-Haraka-256s-simple" || alg_name == "SPHINCS+-SHA256-128f-robust" ||
+        alg_name == "SPHINCS+-SHA256-128f-simple" || alg_name == "SPHINCS+-SHA256-128s-robust" ||
+        alg_name == "SPHINCS+-SHA256-128s-simple" || alg_name == "SPHINCS+-SHA256-192f-robust" ||
+        alg_name == "SPHINCS+-SHA256-192f-simple" || alg_name == "SPHINCS+-SHA256-192s-robust" ||
+        alg_name == "SPHINCS+-SHA256-192s-simple" || alg_name == "SPHINCS+-SHA256-256f-robust" ||
+        alg_name == "SPHINCS+-SHA256-256f-simple" || alg_name == "SPHINCS+-SHA256-256s-robust" ||
+        alg_name == "SPHINCS+-SHA256-256s-simple" || alg_name == "SPHINCS+-SHAKE256-128f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-simple") {
+      return std::make_unique<PQ_PublicKey>(alg_id, key_bits);
+    }
+#endif
 
-std::unique_ptr<Private_Key>
-load_private_key(const AlgorithmIdentifier& alg_id,
-                 const secure_vector<uint8_t>& key_bits)
-   {
-   const std::string alg_name = alg_id.get_oid().to_formatted_string();
+    throw Decoding_Error("Unknown or unavailable public key algorithm " + alg_name);
+  }
+
+  std::unique_ptr<Private_Key> load_private_key(const AlgorithmIdentifier& alg_id,
+                                                const secure_vector<uint8_t>& key_bits) {
+    const std::string alg_name = alg_id.get_oid().to_formatted_string();
 
 #if defined(BOTAN_HAS_RSA)
    if(alg_name == "RSA")
@@ -231,28 +268,61 @@ load_private_key(const AlgorithmIdentifier& alg_id,
       return std::make_unique<XMSS_PrivateKey>(key_bits);
 #endif
 
-   throw Decoding_Error("Unknown or unavailable public key algorithm " + alg_name);
-   }
+#if defined(BOTAN_HAS_OQS)
+    if (alg_name == "Dilithium 2" || alg_name == "Dilithium 3" || alg_name == "Dilithium 5" ||
+        alg_name == "Dilithium 2 AES" || alg_name == "Dilithium 3 AES" ||
+        alg_name == "Dilithium 5 AES" || alg_name == "Picnic L1 FS" ||
+        alg_name == "Picnic L1 Full" || alg_name == "Picnic L3 FS" ||
+        alg_name == "Picnic L3 Full" || alg_name == "Picnic L5 FS" ||
+        alg_name == "Picnic L5 Full" || alg_name == "Picnic3 L1" || alg_name == "Picnic3 L3" ||
+        alg_name == "Picnic3 L5" || alg_name == "SPHINCS+-Haraka-128f-robust" ||
+        alg_name == "SPHINCS+-Haraka-128f-simple" || alg_name == "SPHINCS+-Haraka-128s-robust" ||
+        alg_name == "SPHINCS+-Haraka-128s-simple" || alg_name == "SPHINCS+-Haraka-192f-robust" ||
+        alg_name == "SPHINCS+-Haraka-192f-simple" || alg_name == "SPHINCS+-Haraka-192s-robust" ||
+        alg_name == "SPHINCS+-Haraka-192s-simple" || alg_name == "SPHINCS+-Haraka-256f-robust" ||
+        alg_name == "SPHINCS+-Haraka-256f-simple" || alg_name == "SPHINCS+-Haraka-256s-robust" ||
+        alg_name == "SPHINCS+-Haraka-256s-simple" || alg_name == "SPHINCS+-SHA256-128f-robust" ||
+        alg_name == "SPHINCS+-SHA256-128f-simple" || alg_name == "SPHINCS+-SHA256-128s-robust" ||
+        alg_name == "SPHINCS+-SHA256-128s-simple" || alg_name == "SPHINCS+-SHA256-192f-robust" ||
+        alg_name == "SPHINCS+-SHA256-192f-simple" || alg_name == "SPHINCS+-SHA256-192s-robust" ||
+        alg_name == "SPHINCS+-SHA256-192s-simple" || alg_name == "SPHINCS+-SHA256-256f-robust" ||
+        alg_name == "SPHINCS+-SHA256-256f-simple" || alg_name == "SPHINCS+-SHA256-256s-robust" ||
+        alg_name == "SPHINCS+-SHA256-256s-simple" || alg_name == "SPHINCS+-SHAKE256-128f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-simple") {
+      return std::make_unique<PQ_PrivateKey>(alg_id, key_bits);
+    }
+#endif
+
+    throw Decoding_Error("Unknown or unavailable public key algorithm " + alg_name);
+  }
 
 #if defined(BOTAN_HAS_ECC_GROUP)
 
-namespace {
+  namespace {
 
-std::string default_ec_group_for(const std::string& alg_name)
-   {
-   if(alg_name == "SM2" || alg_name == "SM2_Enc" || alg_name == "SM2_Sig")
-      return "sm2p256v1";
-   if(alg_name == "GOST-34.10" || alg_name == "GOST-34.10-2012-256")
-      return "gost_256A";
-   if(alg_name == "GOST-34.10-2012-512")
-      return "gost_512A";
-   if(alg_name == "ECGDSA")
-      return "brainpool256r1";
-   return "secp256r1";
+    std::string default_ec_group_for(const std::string& alg_name) {
+      if (alg_name == "SM2" || alg_name == "SM2_Enc" || alg_name == "SM2_Sig")
+        return "sm2p256v1";
+      if (alg_name == "GOST-34.10" || alg_name == "GOST-34.10-2012-256")
+        return "gost_256A";
+      if (alg_name == "GOST-34.10-2012-512")
+        return "gost_512A";
+      if (alg_name == "ECGDSA")
+        return "brainpool256r1";
+      return "secp256r1";
+    }
 
-   }
-
-}
+  } // namespace
 
 #endif
 
@@ -391,25 +461,57 @@ create_private_key(const std::string& alg_name,
       }
 #endif
 
-   BOTAN_UNUSED(alg_name, rng, params, provider);
+#if defined(BOTAN_HAS_OQS)
+    if (alg_name == "Dilithium 2" || alg_name == "Dilithium 3" || alg_name == "Dilithium 5" ||
+        alg_name == "Dilithium 2 AES" || alg_name == "Dilithium 3 AES" ||
+        alg_name == "Dilithium 5 AES" || alg_name == "Picnic L1 FS" ||
+        alg_name == "Picnic L1 Full" || alg_name == "Picnic L3 FS" ||
+        alg_name == "Picnic L3 Full" || alg_name == "Picnic L5 FS" ||
+        alg_name == "Picnic L5 Full" || alg_name == "Picnic3 L1" || alg_name == "Picnic3 L3" ||
+        alg_name == "Picnic3 L5" || alg_name == "SPHINCS+-Haraka-128f-robust" ||
+        alg_name == "SPHINCS+-Haraka-128f-simple" || alg_name == "SPHINCS+-Haraka-128s-robust" ||
+        alg_name == "SPHINCS+-Haraka-128s-simple" || alg_name == "SPHINCS+-Haraka-192f-robust" ||
+        alg_name == "SPHINCS+-Haraka-192f-simple" || alg_name == "SPHINCS+-Haraka-192s-robust" ||
+        alg_name == "SPHINCS+-Haraka-192s-simple" || alg_name == "SPHINCS+-Haraka-256f-robust" ||
+        alg_name == "SPHINCS+-Haraka-256f-simple" || alg_name == "SPHINCS+-Haraka-256s-robust" ||
+        alg_name == "SPHINCS+-Haraka-256s-simple" || alg_name == "SPHINCS+-SHA256-128f-robust" ||
+        alg_name == "SPHINCS+-SHA256-128f-simple" || alg_name == "SPHINCS+-SHA256-128s-robust" ||
+        alg_name == "SPHINCS+-SHA256-128s-simple" || alg_name == "SPHINCS+-SHA256-192f-robust" ||
+        alg_name == "SPHINCS+-SHA256-192f-simple" || alg_name == "SPHINCS+-SHA256-192s-robust" ||
+        alg_name == "SPHINCS+-SHA256-192s-simple" || alg_name == "SPHINCS+-SHA256-256f-robust" ||
+        alg_name == "SPHINCS+-SHA256-256f-simple" || alg_name == "SPHINCS+-SHA256-256s-robust" ||
+        alg_name == "SPHINCS+-SHA256-256s-simple" || alg_name == "SPHINCS+-SHAKE256-128f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-128s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-192s-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256f-simple" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-robust" ||
+        alg_name == "SPHINCS+-SHAKE256-256s-simple") {
+      return std::make_unique<PQ_PrivateKey>(alg_name);
+    }
+#endif
 
-   return std::unique_ptr<Private_Key>();
-   }
+    BOTAN_UNUSED(alg_name, rng, params, provider);
 
-std::vector<std::string>
-probe_provider_private_key(const std::string& alg_name,
-                           const std::vector<std::string>& possible)
-   {
-   std::vector<std::string> providers;
+    return std::unique_ptr<Private_Key>();
+  }
 
-   for(auto&& prov : possible)
-      {
-      if(prov == "base")
-         providers.push_back(prov);
-      }
+  std::vector<std::string> probe_provider_private_key(const std::string& alg_name,
+                                                      const std::vector<std::string>& possible) {
+    std::vector<std::string> providers;
 
-   BOTAN_UNUSED(alg_name);
+    for (auto&& prov : possible) {
+      if (prov == "base")
+        providers.push_back(prov);
+    }
 
-   return providers;
-   }
-}
+    BOTAN_UNUSED(alg_name);
+
+    return providers;
+  }
+} // namespace Botan

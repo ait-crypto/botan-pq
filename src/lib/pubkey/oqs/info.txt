@@ -1,0 +1,18 @@
+<defines>
+OQS -> 20160412
+</defines>
+
+<module_info>
+name -> "oqs"
+</module_info>
+
+load_on vendor
+
+<libs>
+all -> oqs
+</libs>
+
+<header:internal>
+oqs-integration.h
+pq_mapping.h
+</header:internal>

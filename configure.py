@@ -567,7 +567,7 @@ def process_command_line(args): # pylint: disable=too-many-locals,too-many-state
                           help='minimize build')
 
     # Should be derived from info.txt but this runs too early
-    third_party = ['boost', 'bzip2', 'lzma', 'commoncrypto', 'sqlite3', 'zlib', 'tpm']
+    third_party = ['boost', 'bzip2', 'lzma', 'commoncrypto', 'sqlite3', 'zlib', 'tpm', 'oqs']
 
     for mod in third_party:
         mods_group.add_option('--with-%s' % (mod),
