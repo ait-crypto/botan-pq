@@ -147,12 +147,9 @@ namespace Botan {
     }
   } // namespace
 
-  /* Verification Operation Class */
+  // Implementation of signature verification
   class PQ_Verify_Operation final : public PK_Ops::Verification {
   public:
-    /**
-     * Destructor
-     */
     virtual ~PQ_Verify_Operation() = default;
 
     /**
@@ -187,16 +184,14 @@ namespace Botan {
       m_msg.insert(m_msg.end(), msg, msg + msg_len);
     }
 
-  protected:
+  private:
     std::vector<uint8_t> m_msg;
     const PQ_PublicKey& m_key;
   };
 
+  // Implementation of the signing operation
   class PQ_Sign_Operation final : public PK_Ops::Signature {
   public:
-    /**
-     * Destructor
-     */
     virtual ~PQ_Sign_Operation() = default;
 
     /**
@@ -214,7 +209,7 @@ namespace Botan {
      * @param rng not used
      * @return secure_vector<uint8_t> return signature in form of a secure vector
      */
-    secure_vector<uint8_t> sign(RandomNumberGenerator& /*rng*/) override {
+    secure_vector<uint8_t> sign(RandomNumberGenerator&) override {
       /* create buffer, so pq_keygen can put key in the buffer - no copying needed */
       std::size_t length = signature_length();
       secure_vector<uint8_t> signature(length);
@@ -252,9 +247,17 @@ namespace Botan {
     const PQ_PrivateKey& m_key;
   };
 
-  /* --- Public Key --- */
+  // Implementation of the public key
 
   PQ_PublicKey::PQ_PublicKey(PQSignatureScheme scheme) : m_sig(get_sig(scheme)), m_scheme(scheme) {}
+
+  PQ_PublicKey::PQ_PublicKey(const AlgorithmIdentifier& alg_id,
+                             const std::vector<uint8_t>& key_bits)
+    : PQ_PublicKey(from_oid(alg_id.get_oid())) {
+    BER_Decoder(key_bits).decode(m_public, ASN1_Type::OctetString);
+  }
+
+  PQ_PublicKey::PQ_PublicKey(const PQ_PublicKey& other) = default;
 
   PQ_PublicKey::~PQ_PublicKey() {}
 
@@ -271,14 +274,6 @@ namespace Botan {
   AlgorithmIdentifier PQ_PublicKey::algorithm_identifier() const {
     return AlgorithmIdentifier(get_oid(), AlgorithmIdentifier::USE_EMPTY_PARAM);
   }
-
-  PQ_PublicKey::PQ_PublicKey(const AlgorithmIdentifier& alg_id,
-                             const std::vector<uint8_t>& key_bits)
-    : PQ_PublicKey(from_oid(alg_id.get_oid())) {
-    BER_Decoder(key_bits).decode(m_public, ASN1_Type::OctetString);
-  }
-
-  PQ_PublicKey::PQ_PublicKey(const PQ_PublicKey& other) = default;
 
   std::unique_ptr<PK_Ops::Verification>
   PQ_PublicKey::create_verification_op(const std::string&, const std::string&) const {
@@ -305,7 +300,7 @@ namespace Botan {
     return m_sig.length_public_key;
   }
 
-  /* --- Private Key --- */
+  // Implementation of the private key
 
   PQ_PrivateKey::PQ_PrivateKey(PQSignatureScheme scheme) : PQ_PublicKey(scheme) {
     m_private.resize(m_sig.length_secret_key);

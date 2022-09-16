@@ -15,6 +15,7 @@
 #define OQS_INTEGRATION_H
 
 namespace Botan {
+  /// Supported signature schemes
   enum class PQSignatureScheme : uint32_t {
     dilithium2,
     dilithium3,
@@ -92,11 +93,16 @@ namespace Botan {
      */
     PQ_PublicKey(const AlgorithmIdentifier& alg_id, const std::vector<uint8_t>& key_bits);
 
+    /**
+     * Copy constructor
+     *
+     * @param other other public key instance
+     */
     PQ_PublicKey(const PQ_PublicKey& other);
 
     /**
      * Return the public key bits
-     * @return std::vector<uint8_t> public key bits in vector form
+     * @return encoded public key
      */
     std::vector<uint8_t> public_key_bits() const override;
 
@@ -133,13 +139,6 @@ namespace Botan {
     virtual size_t estimated_strength() const override;
 
     /**
-     * Helper Function
-     * @param oid
-     * @return pq_scheme
-     */
-    // pq_scheme oid2pq_scheme(OID oid);
-
-    /**
      * This is an internal library function exposed on key types.
      * In almost all cases applications should use wrappers in pubkey.h
      *
@@ -156,8 +155,8 @@ namespace Botan {
     PQSignatureScheme m_scheme;
 
     /**
-     * Decide pq-scheme
-     * @param pq_scheme_choice contains enum-value which represents pq-scheme
+     * Initialize empty public key based on scheme selection
+     * @param scheme selected signature scheme
      */
     PQ_PublicKey(PQSignatureScheme scheme);
   };
@@ -177,10 +176,14 @@ namespace Botan {
 
     /**
      * Generate a new Post Quantum Private Key
-     * @param pq_scheme_choice contains which pq-private key should be created
+     * @param scheme contains which pq-private key should be created
      */
-    PQ_PrivateKey(PQSignatureScheme scheme);
+    explicit PQ_PrivateKey(PQSignatureScheme scheme);
 
+    /**
+     * Generate a new Post Quantum Private Key
+     * @param algorithm_name contains which pq-private key should be created
+     */
     explicit PQ_PrivateKey(const std::string& algorithm_name);
 
     /**
@@ -192,7 +195,7 @@ namespace Botan {
 
     /**
      * Return private key bits
-     * @return secure_vector<uint8_t> private key bits in vector form
+     * @return encoded private key
      */
     secure_vector<uint8_t> private_key_bits() const override;
 
