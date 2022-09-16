@@ -221,7 +221,9 @@ namespace Botan {
 
       const auto status = OQS_SIG_sign(&m_key.m_sig, signature.data(), &length, m_msg.data(),
                                        m_msg.size(), m_key.m_private.data());
-      // TODO: if!
+      if (status != OQS_SUCCESS) {
+        throw Internal_Error("OQS_SIG_sign failed for an unknown reason!");
+      }
       signature.resize(length);
       return signature;
     }
@@ -310,7 +312,9 @@ namespace Botan {
     m_public.resize(m_sig.length_public_key);
 
     const auto status = OQS_SIG_keypair(&m_sig, m_public.data(), m_private.data());
-    // TODO: if status!
+    if (status != OQS_SUCCESS) {
+      throw Internal_Error("OQS_SIG_keypair failed for an unknown reason!");
+    }
   }
 
   PQ_PrivateKey::PQ_PrivateKey(const std::string& algorith_name)
@@ -319,7 +323,9 @@ namespace Botan {
     m_public.resize(m_sig.length_public_key);
 
     const auto status = OQS_SIG_keypair(&m_sig, m_public.data(), m_private.data());
-    // TODO: if status!
+    if (status != OQS_SUCCESS) {
+      throw Internal_Error("OQS_SIG_keypair failed for an unknown reason!");
+    }
   }
 
   PQ_PrivateKey::PQ_PrivateKey(const AlgorithmIdentifier& alg_id,
