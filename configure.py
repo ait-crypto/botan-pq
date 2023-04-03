@@ -19,6 +19,7 @@ On Jython target detection does not work (use --os and --cpu).
 
 import collections
 import copy
+import importlib
 import json
 import sys
 import os
@@ -550,6 +551,12 @@ def process_command_line(args): # pylint: disable=too-many-locals,too-many-state
 
     docs_group.add_option('--without-doxygen', action='store_false',
                           dest='with_doxygen', help=optparse.SUPPRESS_HELP)
+
+    docs_group.add_option('--with-breathe', action='store_true',
+                          default=None, help='Use breathe in Doxygen and Sphinx')
+
+    docs_group.add_option('--without-breathe', action='store_false',
+                          dest='with_breathe', help=optparse.SUPPRESS_HELP)
 
     mods_group = optparse.OptionGroup(parser, 'Module selection')
 
@@ -2121,7 +2128,10 @@ def create_template_vars(source_paths, build_paths, options, modules, cc, arch, 
         'with_rst2man': options.with_rst2man,
         'sphinx_config_dir': source_paths.sphinx_config_dir,
         'with_doxygen': options.with_doxygen,
+        'with_breathe': options.with_breathe,
         'maintainer_mode': options.maintainer_mode,
+
+        'generate_doxygen_xml': "YES" if options.with_breathe else "NO",
 
         'out_dir': normalize_source_path(build_dir),
         'build_dir': normalize_source_path(build_paths.build_dir),
@@ -2825,6 +2835,11 @@ def have_program(program):
     return False
 
 
+def have_python_module(module_name):
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
+
+
 class BotanConfigureLogHandler(logging.StreamHandler):
     def emit(self, record):
         # Do the default stuff first
@@ -2968,6 +2983,9 @@ def set_defaults_for_unset_options(options, info_arch, info_cc, info_os): # pyli
         if options.with_rst2man is None and have_program('rst2man'):
             logging.info('Found rst2man (use --without-rst2man to disable)')
             options.with_rst2man = True
+        if options.with_doxygen and options.with_sphinx and options.with_breathe is None and have_python_module("breathe"):
+            logging.info('Found breathe (use --without-breathe to disable)')
+            options.with_breathe = True
 
     if options.with_pkg_config is None and options.os in info_os:
         options.with_pkg_config = info_os[options.os].uses_pkg_config
@@ -3147,6 +3165,9 @@ def validate_options(options, info_os, info_cc, available_module_policies):
             raise UserError('Using --with-sphinx plus --without-documentation makes no sense')
         if options.with_pdf:
             raise UserError('Using --with-pdf plus --without-documentation makes no sense')
+
+    if options.with_breathe and (not options.with_doxygen or not options.with_sphinx):
+        raise UserError('Using --with-breathe plus --without-doxygen or --without-sphinx makes no sense')
 
     if options.with_pdf and not options.with_sphinx:
         raise UserError('Option --with-pdf requires --with-sphinx')
