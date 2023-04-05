@@ -152,8 +152,16 @@ decrypt_bin(const uint8_t input[], size_t input_len,
    return ciphertext;
    }
 
+}
+
 BOTAN_DIAGNOSTIC_PUSH
 BOTAN_DIAGNOSTIC_IGNORE_DEPRECATED
+
+// Doxygen (or more specifically Breathe) had issues with the above macros and
+// associated them to the function definition below. By re-opening the namespace
+// we work around that. -.-
+
+namespace Botan::CryptoBox {
 
 secure_vector<uint8_t> decrypt_bin(const std::string& input,
                                    const std::string& passphrase)
@@ -178,6 +186,7 @@ std::string decrypt(const std::string& input,
    return decrypt(cast_char_ptr_to_uint8(input.data()),
                   input.size(), passphrase);
    }
-BOTAN_DIAGNOSTIC_POP
 
 }
+
+BOTAN_DIAGNOSTIC_POP
