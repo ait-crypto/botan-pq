@@ -108,7 +108,7 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-extensions = []
+extensions = ['sphinx_togglebutton']
 
 breathe_projects = {}
 breathe_default_project = None
