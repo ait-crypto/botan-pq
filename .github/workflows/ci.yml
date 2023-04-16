@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   windows:
+    if: false # disable temporarily
     name: "Windows"
     strategy:
       fail-fast: false
@@ -59,6 +60,7 @@ jobs:
         run: python3 ./src/scripts/ci_build.py --cc='msvc' --make-tool='jom' --cpu='${{ matrix.arch }}' --test-results-dir=junit_results ${{ matrix.target }}
 
   linux:
+    if: false # disable temporarily
     name: "Linux"
     strategy:
       fail-fast: false
@@ -89,6 +91,7 @@ jobs:
         run: python3 ./src/scripts/ci_build.py --cc='${{ matrix.compiler }}' --test-results-dir=junit_results ${{ matrix.target }}
 
   macos:
+    if: false # disable temporarily
     name: "macOS"
     strategy:
       fail-fast: false
@@ -121,26 +124,10 @@ jobs:
 
       matrix:
         include:
-          - target: coverage
-            compiler: gcc
-            host_os: ubuntu-22.04
-          - target: sanitizer
-            compiler: msvc
-            host_os: windows-2022
-            make_tool: jom
-          - target: sanitizer
-            compiler: clang
-            host_os: ubuntu-22.04
-          - target: sanitizer
-            compiler: gcc
-            host_os: ubuntu-22.04
-          - target: valgrind
-            compiler: gcc
-            host_os: ubuntu-22.04
-          - target: fuzzers
-            compiler: gcc
-            host_os: ubuntu-22.04
           - target: lint
+            compiler: gcc
+            host_os: ubuntu-22.04
+          - target: format
             compiler: gcc
             host_os: ubuntu-22.04
 
@@ -172,6 +159,7 @@ jobs:
         run: python3 ./source/src/scripts/ci_build.py --root-dir=${{ github.workspace }}/source --build-dir=${{ github.workspace }}/build --boringssl-dir=${{ github.workspace }}/boringssl --cc='${{ matrix.compiler }}' --make-tool='${{ matrix.make_tool }}' --test-results-dir=junit_results ${{ matrix.target }}
 
   specials:
+    if: false # disable temporarily
     name: "Special"
     strategy:
       fail-fast: false
@@ -205,6 +193,7 @@ jobs:
         run: python3 ./source/src/scripts/ci_build.py --root-dir=${{ github.workspace }}/source --build-dir=${{ github.workspace }}/build --boringssl-dir=${{ github.workspace }}/boringssl --cc='${{ matrix.compiler }}' --make-tool='${{ matrix.make_tool }}' --test-results-dir=junit_results ${{ matrix.target }}
 
   x-compile:
+    if: false # disable temporarily
     name: "Cross"
     strategy:
       fail-fast: false

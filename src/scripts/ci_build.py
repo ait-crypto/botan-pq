@@ -48,6 +48,7 @@ def known_targets():
         'docs',
         'emscripten',
         'examples',
+        'format',
         'fuzzers',
         'lint',
         'minimized',
@@ -613,6 +614,11 @@ def main(args=None):
         full_paths = [os.path.join(root_dir, s) for s in py_scripts]
         cmds.append([py_interp, '-m', 'pylint'] + pylint_flags + full_paths)
 
+    elif target == 'format':
+        cmds.append([py_interp,
+                     os.path.join(root_dir, 'src/scripts/dev_tools/run_clang_format.py'),
+                     '--src-dir=%s' % (os.path.join(root_dir, 'src')),
+                     '--just-check'])
     else:
         if options.test_results_dir:
             os.makedirs(options.test_results_dir)
