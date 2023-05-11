@@ -1,3 +1,19 @@
+Botan with PQ Schemes
+=====================
+
+This repository provides Botan integrated with some post-quantum schemes from the NIST PQC
+competition. The implementations of post-quantum signature and public-key encryption schemes are
+provided by `liboqs <https://github.com/open-quantum-safe/liboqs>`_
+
+The modification were authored by Sebastian Ramacher and Simon Gärtner from AIT Austrian Institute
+of Technology and are licensed under the same license as botan.
+
+This work received funding from the Austrian Research Promotion Agency (FFG) under grant agreement
+number FO999886370 (QKD4GOV).
+
+The original description follows below.
+
+
 Botan: Crypto and TLS for Modern C++
 ========================================
 
