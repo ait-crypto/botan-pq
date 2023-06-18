@@ -8,11 +8,11 @@ provided by `liboqs <https://github.com/open-quantum-safe/liboqs>`_
 The modification were authored by Sebastian Ramacher and Simon Gärtner from AIT Austrian Institute
 of Technology and are licensed under the same license as botan.
 
-This work received funding from the Austrian Research Promotion Agency (FFG) under grant agreement
-number FO999886370 (QKD4GOV).
+This work was funded by the Austrian security research programme of the Federal Ministry of Finance
+(BMF) as part of the project QKD4Gov and by the DIGITAL-2021-QCI-01 Digital European Program under
+Project number No 101091642 (`QCI-CAT <https://qci-cat.at/>`_).
 
 The original description follows below.
-
 
 Botan: Crypto and TLS for Modern C++
 ========================================
